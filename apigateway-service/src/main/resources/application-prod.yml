@@ -1,0 +1,22 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  application:
+    name: apigateway-service
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    urls:
+      - name: Security
+        url: /api/v1/security/v3/api-docs
+    use-root-path: true
+
+eureka:
+  client:
+    enabled: false
+
+jwt:
+  secret: ${JWT-SECRET}
