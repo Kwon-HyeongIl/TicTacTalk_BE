@@ -47,14 +47,25 @@ async def embed(request: Request):
 async def embed_batch(request: Request):
     try:
         payload = await request.json()
-    except Exception:
+        print(f"[DEBUG] Received payload type: {type(payload)}")
+        print(f"[DEBUG] Payload keys: {payload.keys() if isinstance(payload, dict) else 'Not a dict'}")
+        if isinstance(payload, dict) and "texts" in payload:
+            print(f"[DEBUG] texts length: {len(payload.get('texts', []))}")
+            print(f"[DEBUG] First 3 texts: {payload['texts'][:3] if payload.get('texts') else 'None'}")
+    except Exception as e:
+        print(f"[DEBUG] JSON parse error: {e}")
         payload = await request.body()
         payload = payload.decode("utf-8", errors="ignore")
 
     texts = _normalize_input(payload)
+    print(f"[DEBUG] After normalize: {len(texts)} texts")
+
     if not texts:
         raise HTTPException(status_code=400, detail="Empty input")
+
     vs = model.encode(texts, normalize_embeddings=True)
+    print(f"[DEBUG] Encoded {len(texts)} texts -> {len(vs)} embeddings")
+
     return {"embeddings": [v.tolist() for v in vs]}
 
 if __name__ == "__main__": uvicorn.run(app, host="0.0.0.0", port=8081)

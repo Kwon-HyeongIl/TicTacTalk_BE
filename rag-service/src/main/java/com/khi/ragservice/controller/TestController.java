@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.sql.DataSource;
 import java.net.URI;
-import java.net.http.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
@@ -28,30 +27,7 @@ import java.net.http.HttpResponse;
 @RequestMapping("/rag")
 public class TestController {
 
-    private String contents = """
-[
-  {
-    "speaker": "민수",
-    "message": "너는 왜이렇게 자꾸 짜증나게해?"
-  },
-  {
-    "speaker": "수연",
-    "message": "너가 못생겨서 그래."
-  },
-  {
-    "speaker": "민수",
-    "message": "그렇게 말하는 사람이 어딨어?"
-  },
-  {
-    "speaker": "수연",
-    "message": "여기있는데?"
-  },
-  {
-    "speaker": "민수",
-    "message": "아주 싸가지가 없네."
-  }
-]
-""";
+    private String contents = "너는 왜 자꾸 짜증나게 하는거야?";
 
     @Autowired private DataSource dataSource;
     @Autowired private ObjectMapper objectMapper;
@@ -83,7 +59,7 @@ public class TestController {
             if (dimEnv != null && !dimEnv.isBlank()) expectedDim = Integer.parseInt(dimEnv.trim());
         } catch (Exception ignore) {}
 
-        String embedText = toUtteranceString(contents);
+        String embedText = contents.trim();
         long t0 = System.nanoTime();
         log.info("[RAG] start | K={} | embedderUrl={} | contents.len={} | embedText.len={}",
                 K, embedderUrl, contents.length(), embedText.length());

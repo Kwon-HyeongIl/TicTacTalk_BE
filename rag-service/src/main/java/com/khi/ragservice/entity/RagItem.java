@@ -26,12 +26,12 @@ public class RagItem {
     @Column(nullable = false)
     private Short labelId;
 
+    // Optional metadata (not present in the 4-col CSV)
     private String reason;
     private String context;
 
+    // Make tags optional (nullable) so 4-col CSV works without this column
     @JdbcTypeCode(SqlTypes.ARRAY)
-    @Column(name = "tags", columnDefinition = "integer[]", nullable = false)
+    @Column(name = "tags", columnDefinition = "integer[]", nullable = true)
     private Integer[] tags;
 }
-
-
