@@ -34,7 +34,6 @@ public class DatasetLoader implements CommandLineRunner {
     private final ObjectMapper objectMapper;
     private final ResourceLoader resourceLoader;
 
-    // ===== 설정 =====
     @Value("${app.seed.enabled:true}")                boolean seedEnabled;
     @Value("${app.seed.dataset:classpath:dataset.txt}") String datasetPath;
     @Value("${app.seed.embed.enabled:true}")          boolean embedOnSeed;
@@ -94,7 +93,6 @@ public class DatasetLoader implements CommandLineRunner {
         try (var in = resource.getInputStream();
              var reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
 
-            // 형식 감지: '[' 로 시작하면 JSON 배열, 아니면 NDJSON
             reader.mark(4096);
             String firstLine = reader.readLine();
             if (firstLine == null) {
@@ -117,7 +115,6 @@ public class DatasetLoader implements CommandLineRunner {
                     }
                 }
             } else {
-                // NDJSON
                 String line;
                 while ((line = reader.readLine()) != null) {
                     line = stripBom(line).trim();
@@ -143,7 +140,6 @@ public class DatasetLoader implements CommandLineRunner {
         log.info("[seed] JSON dataset load done. totalRecords={}", total);
     }
 
-    // 한 레코드 -> 배치 적재
     private int processNode(JsonNode node,
                             List<RagItem> batch,
                             List<int[]> idIndexInBatch,
@@ -165,13 +161,11 @@ public class DatasetLoader implements CommandLineRunner {
         item.setLabel(label);
         item.setLabelId(labelId);
 
-        // 선택 컬럼
         var reason = opt(idx, "reason");
         var context = opt(idx, "context");
         item.setReason(reason == null ? null : reason.asText(null));
         item.setContext(context == null ? null : context.asText(null));
 
-        // tags: [1,2] 또는 "{1,2}"
         Integer[] tags = null;
         JsonNode tagsNode = opt(idx, "tags");
         if (tagsNode != null && !tagsNode.isNull()) {
@@ -209,8 +203,6 @@ public class DatasetLoader implements CommandLineRunner {
             idIndexInBatch.clear();
         }
     }
-
-    // ====== DB/벡터/백필 유틸 ======
 
     private void ensurePgVectorReady(DataSource ds) {
         try (var con = ds.getConnection(); var st = con.createStatement()) {
@@ -553,8 +545,6 @@ public class DatasetLoader implements CommandLineRunner {
         if (s == null) return null;
         return s.length() <= max ? s : s.substring(0, max) + "...";
     }
-
-    // ===== seed_history & fingerprint =====
 
     private void ensureSeedHistoryTable(DataSource ds) {
         try (var con = ds.getConnection(); var st = con.createStatement()) {
