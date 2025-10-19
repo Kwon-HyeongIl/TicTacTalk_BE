@@ -4,10 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
 import lombok.Data;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 @Entity
 @Data
@@ -23,15 +20,6 @@ public class RagItem {
     @Column(nullable = false)
     private String label;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "labelid")
     private Short labelId;
-
-    // Optional metadata (not present in the 4-col CSV)
-    private String reason;
-    private String context;
-
-    // Make tags optional (nullable) so 4-col CSV works without this column
-    @JdbcTypeCode(SqlTypes.ARRAY)
-    @Column(name = "tags", columnDefinition = "integer[]", nullable = true)
-    private Integer[] tags;
 }

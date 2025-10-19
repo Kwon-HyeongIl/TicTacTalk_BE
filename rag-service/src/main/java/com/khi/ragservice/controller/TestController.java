@@ -25,9 +25,7 @@ public class TestController {
     }
 
     @PostMapping("/test")
-    public String test() {
-        return "ok";
-    }
+    public String test() { return "ok"; }
 
     @PostMapping("/rag")
     public String rag(@RequestBody(required = false) String body) {
@@ -43,16 +41,14 @@ public class TestController {
                 WITH q AS (SELECT ?::text AS q)
                 SELECT id, text, label, labelid AS label_id,
                        similarity(
-                         (coalesce(text,'')||' '||coalesce(label,'')||' '||coalesce(reason,'')||' '||coalesce(context,'')),
+                         (coalesce(text,'')||' '||coalesce(label,'')),
                          q.q
                        ) AS score
                 FROM rag_items, q
                 WHERE (
-                    (coalesce(text,'')||' '||coalesce(label,'')||' '||coalesce(reason,'')||' '||coalesce(context,'')) % q.q
-                 OR coalesce(text,'') ILIKE '%'||q.q||'%'
-                 OR coalesce(label,'') ILIKE '%'||q.q||'%'
-                 OR coalesce(reason,'') ILIKE '%'||q.q||'%'
-                 OR coalesce(context,'') ILIKE '%'||q.q||'%'
+                     (coalesce(text,'')||' '||coalesce(label,'')) % q.q
+                  OR  coalesce(text,'')  ILIKE '%'||q.q||'%'
+                  OR  coalesce(label,'') ILIKE '%'||q.q||'%'
                 )
                 ORDER BY score DESC NULLS LAST
                 LIMIT ?
@@ -61,12 +57,12 @@ public class TestController {
             List<Map<String, Object>> items = runQuery(sqlFiltered, queryText, K);
 
             if (items.isEmpty()) {
-                log.info("[RAG] no hits in filtered query → fallback to full-table similarity sort");
+                log.info("[RAG] no hits → fallback to full-table similarity sort");
                 final String sqlFallback = """
                     WITH q AS (SELECT ?::text AS q)
-                    SELECT id, text, label, labelid AS label_id, reason, context, tags,
+                    SELECT id, text, label, labelid AS label_id,
                            similarity(
-                             (coalesce(text,'')||' '||coalesce(label,'')||' '||coalesce(reason,'')||' '||coalesce(context,'')),
+                             (coalesce(text,'')||' '||coalesce(label,'')),
                              q.q
                            ) AS score
                     FROM rag_items, q
@@ -77,7 +73,6 @@ public class TestController {
             }
 
             Map<String, Object> out = new LinkedHashMap<>();
-            out.put("query_raw_json", body == null ? "" : body);
             out.put("query_text", queryText);
             out.put("k", K);
             out.put("items", items);
@@ -114,19 +109,6 @@ public class TestController {
         return items;
     }
 
-    private List<Integer> sqlArrayToList(Array a) throws Exception {
-        if (a == null) return null;
-        Object obj = a.getArray();
-        if (obj instanceof Integer[]) return Arrays.asList((Integer[]) obj);
-        if (obj instanceof int[]) {
-            int[] ints = (int[]) obj;
-            List<Integer> lst = new ArrayList<>(ints.length);
-            for (int v : ints) lst.add(v);
-            return lst;
-        }
-        return null;
-    }
-
     private String toUtteranceString(String body) {
         if (body == null || body.isBlank()) return "";
         try {
@@ -144,7 +126,7 @@ public class TestController {
                 String merged = sb.toString().trim();
                 if (!merged.isEmpty()) return merged;
             }
-            return body;
+            return body; // JSON이 아니면 원문 사용
         } catch (Exception ignore) {
             return body;
         }
@@ -156,8 +138,7 @@ public class TestController {
             st.execute("""
                 CREATE INDEX IF NOT EXISTS idx_rag_items_trgm
                 ON rag_items USING gin (
-                  (coalesce(text,'')||' '||coalesce(label,'')||' '||coalesce(reason,'')||' '||coalesce(context,''))
-                  gin_trgm_ops
+                  (coalesce(text,'')||' '||coalesce(label,'')) gin_trgm_ops
                 )
             """);
             st.execute("ANALYZE rag_items");
