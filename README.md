@@ -1,4 +1,5 @@
 # TicTacTalk
+이미지
 
 <br>
 
@@ -41,9 +42,11 @@ TicTacTalk은 대화나 상황 속에서 발생한 갈등이나 문제 상황을
 
 ## ⚙️ 기술적인 부분 (백엔드)
 
-- **MSA 아키텍처**: 프로젝트를 Apigateway-Service, Security-Service, Clova-Service, Rag-Service, Chat-Service의 마이크로 서비스로 설계해서 
+- **MSA 아키텍처**: 프로젝트를 Apigateway-Service, Security-Service, Clova-Service, Rag-Service, Chat-Service의 마이크로 서비스로 설계해서 기능별로 독립 배포가 가능하도록 하였습니다.
 
 - **Clova API 기반 음성 데이터 변환**: 사용자의 음성 대화 데이터를 Clova API를 통해 이후에 처리할 감정 평가에 용이하도록 규격화된 텍스트 데이터로 변환시킵니다.
 
-- **RAG 검색 서비스**: 
+- **RAG 검색 서비스**: 감정 평가 전 대화 라벨링을 위해 PostgreSQL 기반 트라이그램 Top-K 유사도 검색으로 맥락이 유사한 데이터셋 대화 문장을 찾아 라벨 부여 정확도를 높였습니다.
+
+- **웹소켓 기반 채팅 서비스**: 웹소켓으로 실시간 채팅을 제공하고 생성된 대화 로그를 감정 평가용 데이터로 수집 및 활용하도록 설계했습니다.
 
